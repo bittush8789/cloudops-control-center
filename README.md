@@ -12,6 +12,7 @@
 
 ## 📖 Table of Contents
 - [✨ Key Features](#-key-features)
+- [🗺️ Implementation Roadmap](#-implementation-roadmap)
 - [🏗️ System Architecture](#-system-architecture)
 - [🛠️ Tech Stack](#-tech-stack)
 - [🚀 Quick Start](#-quick-start)
@@ -31,6 +32,27 @@
 - **Zero-Downtime Rollouts**: Support for **Canary** and **Blue/Green** deployments using **Argo Rollouts**.
 - **Full Observability**: Real-time metrics and logs with **Prometheus, Grafana, and Loki**.
 - **Shift-Left Testing**: Integrated linting, unit testing, and security scanning in CI.
+
+- [ ] **Phase 1: Foundation & Dockerization**
+  - [x] Multi-stage, production-optimized Dockerfiles for Backend/Frontend.
+  - [x] Local orchestration via Docker Compose.
+  - [x] Integrated Trivy & OWASP ZAP for local security checks.
+- [ ] **Phase 2: Infrastructure as Code (AWS)**
+  - [x] Provision VPC, Subnets, NAT Gateways using Terraform.
+  - [x] Deploy HA EKS Cluster (v1.28) and ECR repositories.
+  - [x] Configure IAM roles and Security Groups.
+- [ ] **Phase 3: CI/CD & Security Hardening**
+  - [x] Build GitHub Actions CI with SonarQube & Trivy scans.
+  - [x] Implement GitOps Handshake (CD) for automated tagging.
+  - [x] Define Kubernetes RBAC and Kyverno Security Policies.
+- [ ] **Phase 4: GitOps Orchestration**
+  - [x] Develop modular Helm Chart with multi-env values.
+  - [x] Bootstrap ArgoCD with App-of-Apps pattern.
+  - [x] Enable Canary/Blue-Green Rollouts via Argo Rollouts.
+- [ ] **Phase 5: Observability & Monitoring**
+  - [x] Deploy PLG Stack (Prometheus, Loki, Grafana).
+  - [x] Configure p95 Latency and 5xx Error Rate alerts.
+  - [x] Design executive platform health dashboards.
 
 ---
 
