@@ -1,0 +1,164 @@
+# =============================================================================
+#  CloudOps Control Center — Docker Compose
+#  Production-ready multi-service orchestration
+#
+#  Services:
+#    - frontend   : Next.js dashboard (port 3000)
+#    - backend    : FastAPI REST API  (port 8000)
+#    - postgres   : PostgreSQL 16     (port 5432)
+#    - redis      : Redis 7 Alpine    (port 6379)
+#    - pgadmin    : Database admin UI  (port 5050)  [optional – dev profile]
+#
+#  Usage:
+#    docker compose up -d                    # Start all core services
+#    docker compose --profile dev up -d      # Start with pgAdmin
+#    docker compose down -v                  # Stop and remove volumes
+#    docker compose logs -f backend          # Tail backend logs
+# =============================================================================
+
+services:
+
+  # ── PostgreSQL Database ────────────────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: cloudops-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-cloudops}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-cloudops}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - cloudops-network
+
+  # ── Redis Cache ────────────────────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: cloudops-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - cloudops-network
+
+  # ── FastAPI Backend ────────────────────────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: cloudops-backend
+    restart: unless-stopped
+    environment:
+      PROJECT_NAME: "CloudOps Control Center"
+      API_V1_STR: "/api/v1"
+      SECRET_KEY: ${SECRET_KEY:-cloudops-super-secret-key-change-in-production}
+      ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES:-11520}
+      POSTGRES_SERVER: postgres
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-cloudops}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    networks:
+      - cloudops-network
+    labels:
+      - "com.cloudops.service=backend"
+      - "com.cloudops.version=1.0.0"
+
+  # ── Next.js Frontend ──────────────────────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: http://localhost:8000/api/v1
+    container_name: cloudops-frontend
+    restart: unless-stopped
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8000/api/v1
+    ports:
+      - "3000:3000"
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    networks:
+      - cloudops-network
+    labels:
+      - "com.cloudops.service=frontend"
+      - "com.cloudops.version=1.0.0"
+
+  # ── pgAdmin (Development Only) ────────────────────────────────────────────
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: cloudops-pgadmin
+    restart: unless-stopped
+    profiles:
+      - dev
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@cloudops.dev}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin}
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+    ports:
+      - "5050:80"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    networks:
+      - cloudops-network
+
+# ── Volumes ──────────────────────────────────────────────────────────────────
+volumes:
+  postgres_data:
+    driver: local
+    name: cloudops-postgres-data
+  redis_data:
+    driver: local
+    name: cloudops-redis-data
+  pgadmin_data:
+    driver: local
+    name: cloudops-pgadmin-data
+
+# ── Networks ─────────────────────────────────────────────────────────────────
+networks:
+  cloudops-network:
+    driver: bridge
+    name: cloudops-network
