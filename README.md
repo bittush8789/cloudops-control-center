@@ -14,6 +14,7 @@
 - [✨ Key Features](#-key-features)
 - [🗺️ Implementation Roadmap](#-implementation-roadmap)
 - [🏗️ System Architecture](#-system-architecture)
+- [🛠️ Tool-Specific Commands](#-tool-specific-commands)
 - [🛠️ Tech Stack](#-tech-stack)
 - [🚀 Quick Start](#-quick-start)
 - [🔄 CI/CD & GitOps Lifecycle](#-cicd--gitops-lifecycle)
@@ -84,6 +85,60 @@ graph TD
         Prom --> Grafana[Grafana]
         K8s --> Loki[Loki]
     end
+```
+
+---
+
+## 🛠️ Tool-Specific Commands
+
+### 1. Infrastructure (Terraform)
+```bash
+cd terraform
+terraform init          # Download modules and providers
+terraform plan          # Preview infrastructure changes
+terraform apply         # Deploy to AWS
+terraform output        # View EKS cluster endpoint & ECR URLs
+```
+
+### 2. Containers & Security (Docker & Trivy)
+```bash
+# Local Run
+docker compose up -d    # Start app, DB, Redis, and scanners
+docker compose logs -f  # Follow logs
+
+# Security Scanning
+trivy fs .              # Scan filesystem for vulnerabilities
+trivy image <image_id>  # Scan Docker image for OS vulnerabilities
+```
+
+### 3. Orchestration (Helm & Kubectl)
+```bash
+# Helm Operations
+helm dependency update ./gitops-repo/helm
+helm upgrade --install cloudops ./gitops-repo/helm -f gitops-repo/helm/values-dev.yaml
+
+# Kubernetes Troubleshooting
+kubectl get pods -n cloudops-prod         # List production pods
+kubectl logs deployment/cloudops-backend  # Check backend logs
+kubectl describe ingress cloudops-ingress # Verify routing
+```
+
+### 4. GitOps (ArgoCD & Rollouts)
+```bash
+# ArgoCD CLI
+argocd login <argocd-server-url>
+argocd app sync cloudops-root             # Force sync the App-of-Apps
+
+# Argo Rollouts
+kubectl argo rollouts get rollout cloudops-backend -n cloudops-prod
+kubectl argo rollouts promote cloudops-backend -n cloudops-prod
+```
+
+### 5. Monitoring (Prometheus & Grafana)
+```bash
+# Access Dashboards (Port Forwarding)
+kubectl port-forward svc/prometheus-grafana 3000:80 -n monitoring
+# Open http://localhost:3000 (Admin / prom-operator)
 ```
 
 ---
