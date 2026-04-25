@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: cloudops-quota
+  namespace: cloudops-prod
+spec:
+  hard:
+    requests.cpu: "4"
+    requests.memory: 8Gi
+    limits.cpu: "10"
+    limits.memory: 16Gi
+    pods: "20"
+    services: "5"

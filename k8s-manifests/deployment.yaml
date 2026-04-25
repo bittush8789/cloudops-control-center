@@ -1,0 +1,78 @@
+# --- Backend Deployment ---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cloudops-backend
+  namespace: cloudops-prod
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: cloudops
+      component: backend
+  template:
+    metadata:
+      labels:
+        app: cloudops
+        component: backend
+    spec:
+      containers:
+        - name: backend
+          image: bittush8789/cloudops-backend:latest
+          ports:
+            - containerPort: 8000
+          env:
+            - name: POSTGRES_SERVER
+              value: "postgres-service"
+            - name: REDIS_HOST
+              value: "redis-service"
+          resources:
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+
+---
+# --- Frontend Deployment ---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cloudops-frontend
+  namespace: cloudops-prod
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: cloudops
+      component: frontend
+  template:
+    metadata:
+      labels:
+        app: cloudops
+        component: frontend
+    spec:
+      containers:
+        - name: frontend
+          image: bittush8789/cloudops-frontend:latest
+          ports:
+            - containerPort: 3000
+          env:
+            - name: NEXT_PUBLIC_API_URL
+              value: "http://cloudops-backend:8000/api/v1"
+          resources:
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 3000

@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: cloudops-backend
+  namespace: cloudops-prod
+spec:
+  selector:
+    app: cloudops
+    component: backend
+  ports:
+    - port: 8000
+      targetPort: 8000
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cloudops-frontend
+  namespace: cloudops-prod
+spec:
+  selector:
+    app: cloudops
+    component: frontend
+  ports:
+    - port: 3000
+      targetPort: 3000
