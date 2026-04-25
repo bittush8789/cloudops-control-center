@@ -122,16 +122,17 @@ ArgoCD will automatically manage:
 
 ---
 
-## ⏪ Rollback Guide
+## ⏪ Rollback Strategies
 
-### Manual Rollback (Helm)
-If a deployment fails, use the rollback script:
-```bash
-./scripts/rollback.sh prod
-```
+CloudOps supports a three-tier rollback strategy for maximum safety:
 
-### GitOps Rollback
-Revert the last commit in the `CICD` branch, and ArgoCD will automatically roll back the cluster state.
+1.  **Git Revert (Primary)**: The standard GitOps way. Reverts configuration in Git, and ArgoCD syncs the cluster.
+    - `scripts/git-rollback.sh CICD`
+2.  **Helm Rollback (Manual)**: Fastest way to revert a release revision manually.
+    - `scripts/rollback.sh prod`
+3.  **ArgoCD Sync (Historical)**: Point an application to a specific historical Git SHA via the ArgoCD UI or CLI.
+
+See the full [Rollback Guide](docs/rollback-strategies.md) for more details.
 
 ---
 
