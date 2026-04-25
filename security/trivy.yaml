@@ -1,0 +1,13 @@
+# Trivy Configuration File
+scan:
+  type: 'fs,config'
+  format: 'table'
+  exit-code: 1
+  severity: 'HIGH,CRITICAL'
+  ignore-unfixed: true
+
+report:
+  output: 'security-report.txt'
+
+vuln:
+  type: 'os,library'
