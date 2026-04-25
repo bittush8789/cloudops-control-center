@@ -248,14 +248,5 @@ backend:
 
 ---
 
-## 👤 Author
-
-**Bittu Sharma**
-*Senior Full Stack & DevOps Architect*
-- **GitHub**: [@bittush8789](https://github.com/bittush8789)
-- **LinkedIn**: [Your-LinkedIn-Profile](https://linkedin.com/in/yourprofile)
-
----
-
 ## 📄 License
 Distributed under the MIT License. See `LICENSE` for more information.
