@@ -22,7 +22,7 @@
 - [📊 Observability & Monitoring](#-observability--monitoring)
 - [🌀 Advanced Rollout Strategies](#-advanced-rollout-strategies)
 - [⏪ Rollback Mechanisms](#-rollback-mechanisms)
-- [👤 Author](#-author)
+- [📄 License](#-license)
 
 ---
 
