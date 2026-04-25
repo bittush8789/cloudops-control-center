@@ -1,10 +1,40 @@
-# 🚀 CloudOps Control Center — DevOps Platform
+# 🚀 CloudOps Control Center — Enterprise DevOps Platform
 
-CloudOps Control Center is an enterprise-grade, production-ready DevOps and GitOps platform designed for monitoring, managing, and automating deployments at scale.
+[![CI Pipeline](https://img.shields.io/badge/CI-GitHub%20Actions-blue?logo=github-actions)](https://github.com/bittush8789/cloudops-control-center/actions)
+[![Security Scan](https://img.shields.io/badge/Security-Trivy%20%7C%20SonarQube-green?logo=trivy)](security/README.md)
+[![Infrastructure](https://img.shields.io/badge/Infra-Terraform%20%7C%20AWS-orange?logo=terraform)](terraform/README.md)
+[![GitOps](https://img.shields.io/badge/GitOps-ArgoCD-red?logo=argo)](gitops-repo/README.md)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+**CloudOps Control Center** is a state-of-the-art, production-grade DevOps and GitOps platform designed for high-scale application management, automated infrastructure provisioning, and deep observability. Built for reliability, security, and developer velocity.
 
 ---
 
-## 🏗️ Architecture
+## 📖 Table of Contents
+- [✨ Key Features](#-key-features)
+- [🏗️ System Architecture](#-system-architecture)
+- [🛠️ Tech Stack](#-tech-stack)
+- [🚀 Quick Start](#-quick-start)
+- [🔄 CI/CD & GitOps Lifecycle](#-cicd--gitops-lifecycle)
+- [🛡️ Security Hardening](#-security-hardening)
+- [📊 Observability & Monitoring](#-observability--monitoring)
+- [🌀 Advanced Rollout Strategies](#-advanced-rollout-strategies)
+- [⏪ Rollback Mechanisms](#-rollback-mechanisms)
+- [👤 Author](#-author)
+
+---
+
+## ✨ Key Features
+- **Automated Infrastructure**: Full VPC, EKS, and ECR provisioning via **Terraform**.
+- **Declarative GitOps**: Continuous delivery managed by **ArgoCD** using the **App-of-Apps** pattern.
+- **Enterprise Security**: Automated **SAST (SonarQube)**, **DAST (OWASP ZAP)**, and **SCA (Trivy)**.
+- **Zero-Downtime Rollouts**: Support for **Canary** and **Blue/Green** deployments using **Argo Rollouts**.
+- **Full Observability**: Real-time metrics and logs with **Prometheus, Grafana, and Loki**.
+- **Shift-Left Testing**: Integrated linting, unit testing, and security scanning in CI.
+
+---
+
+## 🏗️ System Architecture
 
 ```mermaid
 graph TD
@@ -15,15 +45,21 @@ graph TD
     Backend -->|Cache| Redis[(Redis)]
     
     subgraph "CI/CD & GitOps"
-        Github[GitHub Actions] -->|Push| ECR[AWS ECR]
-        Github -->|Update| GitOpsRepo[GitOps Repository]
+        Github[GitHub Actions] -->|Push Image| ECR[AWS ECR]
+        Github -->|Update Manifests| GitOpsRepo[GitOps Repository]
         ArgoCD[ArgoCD] -->|Monitor| GitOpsRepo
         ArgoCD -->|Sync| K8s[EKS Cluster]
     end
     
+    subgraph "Security & Policy"
+        Kyverno[Kyverno] -->|Enforce| K8s
+        Trivy[Trivy] -->|Scan| Github
+        Sonar[SonarQube] -->|Audit| Github
+    end
+    
     subgraph "Observability"
-        K8s --> Prometheus[Prometheus]
-        K8s --> Grafana[Grafana]
+        K8s --> Prom[Prometheus]
+        Prom --> Grafana[Grafana]
         K8s --> Loki[Loki]
     end
 ```
@@ -32,117 +68,117 @@ graph TD
 
 ## 🛠️ Tech Stack
 
-- **Frontend**: Next.js 15, TypeScript, Tailwind CSS, ShadCN UI.
-- **Backend**: FastAPI (Python 3.12), Pydantic v2, SQLAlchemy 2.0.
-- **Infrastructure**: Terraform, AWS (VPC, EKS, ECR).
-- **Orchestration**: Kubernetes, Helm, ArgoCD.
-- **Security**: SonarQube, OWASP ZAP, Aqua Trivy, Kyverno.
-- **Observability**: Prometheus, Grafana, Loki.
+| Category | Technologies |
+| :--- | :--- |
+| **Frontend** | Next.js 15, TypeScript, Tailwind CSS, ShadCN UI |
+| **Backend** | FastAPI, Python 3.12, Pydantic v2, SQLAlchemy 2.0 |
+| **Cloud** | AWS (EKS, VPC, ECR, IAM, KMS) |
+| **IaC** | Terraform 1.5+ |
+| **Orchestration** | Kubernetes, Helm 3, ArgoCD, Argo Rollouts |
+| **Security** | Trivy, SonarQube, OWASP ZAP, Kyverno, RBAC |
+| **Observability** | Prometheus, Grafana, Loki, Alertmanager |
 
 ---
 
-## 🚀 Setup & Deployment Guide
+## 🚀 Quick Start
 
-### 1. Infrastructure Provisioning (Terraform)
-Navigate to the `terraform/` directory and run:
+### 1. Prerequisite
+- AWS CLI configured with admin permissions.
+- Terraform, Kubectl, and Helm installed locally.
+- A GitHub Personal Access Token (PAT) for ArgoCD.
+
+### 2. Infrastructure Deployment
 ```bash
+cd terraform
 terraform init
-terraform plan
-terraform apply
+terraform apply -auto-approve
 ```
 
-### 2. Platform Bootstrapping
-Run the bootstrap script to prepare your cluster:
+### 3. Platform Bootstrapping
 ```bash
 chmod +x scripts/*.sh
 ./scripts/bootstrap.sh
 ```
 
-### 3. Local Development (Docker)
-For local testing without a Kubernetes cluster:
-```bash
-docker compose up -d
-```
-
----
-
-## 🔄 CI/CD & GitOps Flow
-
-### Continuous Integration (CI)
-Our `ci.yml` workflow automatically:
-1. Lints and tests code.
-2. Performs **SonarQube** code quality analysis.
-3. Runs **Trivy** vulnerability scans on the filesystem and Docker images.
-4. Pushes production-optimized images to **AWS ECR**.
-
-### Continuous Deployment (CD)
-Our `cd.yml` workflow:
-1. Bumps image tags in the `gitops-repo/helm` values.
-2. Commits changes to the `CICD` branch.
-3. **ArgoCD** detects the change and synchronizes the cluster state.
-
-### Promotion Flow
-To promote a build from `dev` to `prod`:
-```bash
-./scripts/promote.sh dev prod
-```
-
----
-
-## 🐙 ArgoCD Setup
-
-We use the **App-of-Apps** pattern. To deploy the root application:
+### 4. GitOps Initialization
 ```bash
 kubectl apply -f gitops-repo/argocd/app-of-apps.yaml
 ```
-ArgoCD will automatically manage:
-- Namespaces & Projects.
-- Environment-specific Applications (Dev, QA, Prod).
-- Security Policies.
 
 ---
 
-## 🔍 Observability
+## 🔄 CI/CD & GitOps Lifecycle
 
-| Tool | URL | Description |
-|------|-----|-------------|
-| **Grafana** | `http://grafana.local` | Custom dashboards for API latency and error rates. |
-| **Prometheus** | `http://prometheus.local` | Real-time metrics and alerting. |
-| **Loki** | `Integrated in Grafana` | Centralized log aggregation. |
+### **Continuous Integration**
+The `ci.yml` pipeline is triggered on every push:
+1. **Code Audit**: Linting and unit tests.
+2. **Security Check**: SonarQube analysis and Trivy filesystem scan.
+3. **Build**: Multi-stage Docker build for production.
+4. **Image Scan**: Trivy scan of the Docker image.
+5. **Publish**: Push to AWS ECR.
 
----
-
-## 🛡️ Security Strategy
-
-- **Static Analysis**: SonarQube quality gates.
-- **Dynamic Scanning**: OWASP ZAP baseline scans for API and UI.
-- **SCA/Image Scan**: Trivy integration in every CI pipeline.
-- **RBAC**: Fine-grained access control for Viewers and Developers.
-- **Admission Control**: Kyverno policies enforcing non-root users.
-
----
-
-## ⏪ Rollback Strategies
-
-CloudOps supports a three-tier rollback strategy for maximum safety:
-
-1.  **Git Revert (Primary)**: The standard GitOps way. Reverts configuration in Git, and ArgoCD syncs the cluster.
-    - `scripts/git-rollback.sh CICD`
-2.  **Helm Rollback (Manual)**: Fastest way to revert a release revision manually.
-    - `scripts/rollback.sh prod`
-3.  **ArgoCD Sync (Historical)**: Point an application to a specific historical Git SHA via the ArgoCD UI or CLI.
-
-See the full [Rollback Guide](docs/rollback-strategies.md) for more details.
+### **Continuous Deployment**
+The `cd.yml` pipeline automates the GitOps handshake:
+1. Detects the new image tag.
+2. Updates `values.yaml` in the GitOps repository.
+3. Commits and pushes to the `CICD` branch.
+4. **ArgoCD** reconciles the cluster to the new state.
 
 ---
 
-## ❓ Troubleshooting
+## 🛡️ Security Hardening
 
-- **CrashLoopBackOff**: Check logs using `kubectl logs -f <pod-name> -n cloudops-prod`.
-- **Database Connection**: Ensure the `postgres` service is healthy and credentials in `Secrets` are correct.
-- **ArgoCD OutOfSync**: Check for manual cluster changes or invalid Helm values.
+- **Infrastructure**: All nodes reside in **Private Subnets**. Load Balancers are managed via **AWS ELB**.
+- **Containers**: Images use **non-root users** and **read-only filesystems** where possible.
+- **Admission Control**: **Kyverno** policies block privileged containers and require resource limits.
+- **Secrets**: Managed via **AWS Secrets Manager** integration (Recommended: External Secrets Operator).
+- **Network**: **NetworkPolicies** restrict traffic between namespaces and components.
+
+---
+
+## 📊 Observability & Monitoring
+
+Our monitoring stack provides deep insights into platform health:
+- **Grafana**: Pre-configured dashboards for API Latency (p95), Request Rates, and Pod Health.
+- **Alertmanager**: Critical alerts routed to Slack/Email for:
+  - 5xx Error Spikes (>5%)
+  - API Latency (>2s)
+  - Pod CrashLoopBackOffs
+  - High CPU/Memory Utilization
+
+---
+
+## 🌀 Advanced Rollout Strategies
+
+Toggle between strategies in your environment `values.yaml`:
+
+### **Canary Rollout**
+```yaml
+backend:
+  rollout:
+    enabled: true
+    strategy: canary
+```
+*Step-based traffic shifting: 20% → 5m Pause → 50% → 5m Pause → 100%.*
+
+---
+
+## ⏪ Rollback Mechanisms
+
+1.  **Git Revert**: Revert commit in `CICD` branch for a clean GitOps audit trail.
+2.  **Helm Rollback**: Instant cluster recovery via `scripts/rollback.sh`.
+3.  **ArgoCD History**: Use the UI to "Rollback" to any historical Git SHA.
 
 ---
 
 ## 👤 Author
-**Bittu Sharma** — Senior Full Stack & DevOps Architect
+
+**Bittu Sharma**
+*Senior Full Stack & DevOps Architect*
+- **GitHub**: [@bittush8789](https://github.com/bittush8789)
+- **LinkedIn**: [Your-LinkedIn-Profile](https://linkedin.com/in/yourprofile)
+
+---
+
+## 📄 License
+Distributed under the MIT License. See `LICENSE` for more information.
