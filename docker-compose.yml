@@ -168,6 +168,19 @@ services:
     networks:
       - cloudops-network
 
+  # ── Aqua Security Trivy (Vulnerability Scanner) ──────────────────────────────
+  trivy:
+    image: aquasec/trivy:latest
+    container_name: cloudops-trivy
+    profiles:
+      - security
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./trivy_cache:/root/.cache/trivy
+      - .:/src:ro
+    networks:
+      - cloudops-network
+
   # ── OWASP ZAP (DAST) ────────────────────────────────────────────────────────
   zap:
     image: ghcr.io/zaproxy/zaproxy:stable

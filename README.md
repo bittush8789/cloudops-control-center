@@ -40,7 +40,7 @@
 - [Frontend Pages](#-frontend-pages)
 - [Docker Compose](#-docker-compose)
 - [Code Quality (SonarQube)](#-code-quality-sonarqube)
-- [Vulnerability Scanning (OWASP)](#-vulnerability-scanning-owasp)
+- [Vulnerability Scanning (OWASP & Trivy)](#-vulnerability-scanning-owasp--trivy)
 - [Security](#-security)
 - [Screenshots](#-screenshots)
 - [Roadmap](#-roadmap)
@@ -550,6 +550,8 @@ The project ships with a production-ready `docker-compose.yml` that orchestrates
 | `frontend`   | Custom (Next.js)   | 3000  | Dashboard UI                       |
 | `backend`    | Custom (FastAPI)   | 8000  | REST API server                    |
 | `sonarqube`  | sonarqube:community| 9000  | Static code analysis *(sonar profile)*|
+| `trivy`      | aquasec/trivy      | -     | Image & FS scanner *(security profile)*|
+| `zap`        | zaproxy:stable     | -     | DAST security scanner *(security profile)*|
 | `postgres`   | postgres:16-alpine | 5432  | Primary database                   |
 | `redis`      | redis:7-alpine     | 6379  | Cache & session store              |
 | `pgadmin`    | dpage/pgadmin4     | 5050  | DB admin UI *(dev profile only)*   |
@@ -682,32 +684,26 @@ The project includes a `sonar-project.properties` file that automatically config
 
 ---
 
-## 🛡️ Vulnerability Scanning (OWASP)
+## 🛡️ Vulnerability Scanning (OWASP & Trivy)
 
-The platform includes **OWASP ZAP** (Zed Attack Proxy) for Dynamic Application Security Testing (DAST).
+The platform includes a multi-layered security scanning suite.
 
-### Setup Security Container
+### 1. OWASP ZAP (DAST)
+Dynamic Application Security Testing for finding vulnerabilities in the running application.
 
-1. **Start the ZAP container**:
-   ```bash
-   docker compose --profile security up -d
-   ```
+```bash
+# Baseline scan for API
+docker exec -t cloudops-zap zap-baseline.py -t http://cloudops-backend:8000 -r api-report.html
+```
 
-2. **Verify it's running**:
-   ```bash
-   docker ps | grep zap
-   ```
+### 2. Aqua Trivy (SCA & Image Scan)
+Static analysis for container images, filesystems, and configurations.
 
-### Running Security Scans
-
-| Scan Type | Target | Command |
-|-----------|--------|---------|
-| **Baseline** | Backend | `docker exec -t cloudops-zap zap-baseline.py -t http://cloudops-backend:8000 -r api-report.html` |
-| **Baseline** | Frontend | `docker exec -t cloudops-zap zap-baseline.py -t http://cloudops-frontend:3000 -r ui-report.html` |
-| **Full Scan** | Backend | `docker exec -t cloudops-zap zap-full-scan.py -t http://cloudops-backend:8000 -r api-full.html` |
-
-### Reports
-All reports are saved to the `./zap` directory in HTML format.
+| Target | Command |
+|--------|---------|
+| **Filesystem** | `docker exec -it cloudops-trivy trivy fs /src` |
+| **Backend Image** | `docker exec -it cloudops-trivy trivy image cloudops-backend` |
+| **Config (IaC)** | `docker exec -it cloudops-trivy trivy config /src` |
 
 ---
 
@@ -724,6 +720,7 @@ All reports are saved to the `./zap` directory in HTML format.
 - [x] REST API with OpenAPI documentation
 - [x] Static Code Analysis (SonarQube)
 - [x] Dynamic Security Scanning (OWASP ZAP)
+- [x] Container & Filesystem Scanning (Trivy)
 - [ ] WebSocket real-time log streaming
 - [ ] Prometheus + Grafana metric integration
 - [ ] Database migrations with Alembic
