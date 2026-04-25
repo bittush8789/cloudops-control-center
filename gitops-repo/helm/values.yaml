@@ -1,0 +1,37 @@
+# Default values for cloudops-control-center.
+
+replicaCount: 1
+
+images:
+  backend:
+    repository: your-docker-hub/cloudops-backend
+    pullPolicy: IfNotPresent
+    tag: "latest"
+  frontend:
+    repository: your-docker-hub/cloudops-frontend
+    pullPolicy: IfNotPresent
+    tag: "latest"
+
+service:
+  type: ClusterIP
+  backendPort: 8000
+  frontendPort: 3000
+
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+  hosts:
+    - host: cloudops.local
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi

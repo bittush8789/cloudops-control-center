@@ -1,0 +1,4 @@
+replicaCount: 1
+ingress:
+  hosts:
+    - host: dev.cloudops.example.com
