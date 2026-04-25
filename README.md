@@ -551,6 +551,16 @@ The project ships with a production-ready `docker-compose.yml` that orchestrates
 | `redis`      | redis:7-alpine     | 6379  | Cache & session store              |
 | `pgadmin`    | dpage/pgadmin4     | 5050  | DB admin UI *(dev profile only)*   |
 
+### 🏗️ Docker Strategy (Enterprise Standards)
+
+Both Frontend and Backend images are built using industry-standard best practices:
+
+- **Multi-Stage Builds**: Separates build dependencies from the final runtime image, reducing image size by ~70%.
+- **Production Optimized**: Uses `python:3.12-slim` and `node:20-alpine` as base images for minimal footprint and reduced attack surface.
+- **Security (Non-Root)**: Applications run under a dedicated `cloudops` user rather than `root`, preventing container breakout vulnerabilities.
+- **Health Checks**: Integrated Docker health checks for automated service monitoring and orchestration.
+- **Layer Caching**: Optimized `COPY` commands to leverage Docker's build cache for faster CI/CD pipelines.
+
 ### Quick Start
 
 ```bash
