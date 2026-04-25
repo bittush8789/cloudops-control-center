@@ -40,6 +40,7 @@
 - [Frontend Pages](#-frontend-pages)
 - [Docker Compose](#-docker-compose)
 - [Code Quality (SonarQube)](#-code-quality-sonarqube)
+- [Vulnerability Scanning (OWASP)](#-vulnerability-scanning-owasp)
 - [Security](#-security)
 - [Screenshots](#-screenshots)
 - [Roadmap](#-roadmap)
@@ -679,6 +680,37 @@ The project includes a `sonar-project.properties` file that automatically config
 - TypeScript/Next.js analysis for the frontend
 - Exclusions for build artifacts and dependency folders
 
+---
+
+## 🛡️ Vulnerability Scanning (OWASP)
+
+The platform includes **OWASP ZAP** (Zed Attack Proxy) for Dynamic Application Security Testing (DAST).
+
+### Setup Security Container
+
+1. **Start the ZAP container**:
+   ```bash
+   docker compose --profile security up -d
+   ```
+
+2. **Verify it's running**:
+   ```bash
+   docker ps | grep zap
+   ```
+
+### Running Security Scans
+
+| Scan Type | Target | Command |
+|-----------|--------|---------|
+| **Baseline** | Backend | `docker exec -t cloudops-zap zap-baseline.py -t http://cloudops-backend:8000 -r api-report.html` |
+| **Baseline** | Frontend | `docker exec -t cloudops-zap zap-baseline.py -t http://cloudops-frontend:3000 -r ui-report.html` |
+| **Full Scan** | Backend | `docker exec -t cloudops-zap zap-full-scan.py -t http://cloudops-backend:8000 -r api-full.html` |
+
+### Reports
+All reports are saved to the `./zap` directory in HTML format.
+
+---
+
 ## 🗺 Roadmap
 
 - [x] JWT Authentication (Login / Register)
@@ -691,6 +723,7 @@ The project includes a `sonar-project.properties` file that automatically config
 - [x] User management admin panel
 - [x] REST API with OpenAPI documentation
 - [x] Static Code Analysis (SonarQube)
+- [x] Dynamic Security Scanning (OWASP ZAP)
 - [ ] WebSocket real-time log streaming
 - [ ] Prometheus + Grafana metric integration
 - [ ] Database migrations with Alembic

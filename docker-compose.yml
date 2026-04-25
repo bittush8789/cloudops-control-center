@@ -168,6 +168,19 @@ services:
     networks:
       - cloudops-network
 
+  # ── OWASP ZAP (DAST) ────────────────────────────────────────────────────────
+  zap:
+    image: ghcr.io/zaproxy/zaproxy:stable
+    container_name: cloudops-zap
+    profiles:
+      - security
+    user: root
+    command: sleep infinity
+    volumes:
+      - ./zap:/zap/wrk:rw
+    networks:
+      - cloudops-network
+
   # ── pgAdmin (Development Only) ────────────────────────────────────────────
   pgadmin:
     image: dpage/pgadmin4:latest
