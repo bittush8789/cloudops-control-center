@@ -1,0 +1,23 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: cloudops-staging
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
+spec:
+  project: cloudops-project
+  source:
+    repoURL: https://github.com/bittush8789/cloudops-control-center.git
+    targetRevision: main
+    path: gitops-repo/helm
+    helm:
+      valueFiles:
+        - values-staging.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: cloudops-staging
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

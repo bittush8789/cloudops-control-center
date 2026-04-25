@@ -1,0 +1,23 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: cloudops-qa
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
+spec:
+  project: cloudops-project
+  source:
+    repoURL: https://github.com/bittush8789/cloudops-control-center.git
+    targetRevision: main
+    path: gitops-repo/helm
+    helm:
+      valueFiles:
+        - values-qa.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: cloudops-qa
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
