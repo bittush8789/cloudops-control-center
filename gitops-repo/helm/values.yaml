@@ -26,6 +26,9 @@ backend:
     secretKey: "change-me"
     postgresUser: "postgres"
     postgresPassword: "password"
+  rollout:
+    enabled: false
+    strategy: canary # options: canary, blueGreen
 
 # Frontend Configuration
 frontend:

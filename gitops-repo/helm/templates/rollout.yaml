@@ -1,0 +1,54 @@
+{{- if .Values.backend.rollout.enabled -}}
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: {{ include "cloudops.fullname" . }}-backend
+  labels:
+    {{- include "cloudops.labels" . | nindent 4 }}
+    component: backend
+spec:
+  replicas: {{ .Values.backend.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "cloudops.selectorLabels" . | nindent 6 }}
+      component: backend
+  template:
+    metadata:
+      labels:
+        {{- include "cloudops.selectorLabels" . | nindent 8 }}
+        component: backend
+    spec:
+      serviceAccountName: {{ include "cloudops.fullname" . }}
+      containers:
+        - name: backend
+          image: "{{ .Values.backend.image.repository }}:{{ .Values.backend.image.tag | default .Chart.AppVersion }}"
+          ports:
+            - name: http
+              containerPort: 8000
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+          resources:
+            {{- toYaml .Values.backend.resources | nindent 12 }}
+          envFrom:
+            - configMapRef:
+                name: {{ include "cloudops.fullname" . }}-config
+            - secretRef:
+                name: {{ include "cloudops.fullname" . }}-secrets
+  strategy:
+    {{- if eq .Values.backend.rollout.strategy "canary" }}
+    canary:
+      steps:
+        - setWeight: 20
+        - pause: { duration: 5m }
+        - setWeight: 50
+        - pause: { duration: 5m }
+    {{- else if eq .Values.backend.rollout.strategy "blueGreen" }}
+    blueGreen:
+      activeService: {{ include "cloudops.fullname" . }}-backend
+      previewService: {{ include "cloudops.fullname" . }}-backend-preview
+      autoPromotionEnabled: false
+    {{- end }}
+{{- end }}

@@ -3,6 +3,7 @@
 {{- $selectorLabels := include "cloudops.selectorLabels" . -}}
 
 # --- Backend Deployment ---
+{{- if not .Values.backend.rollout.enabled -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -50,6 +51,7 @@ spec:
                 name: {{ $fullName }}-config
             - secretRef:
                 name: {{ $fullName }}-secrets
+{{- end }}
 
 ---
 # --- Frontend Deployment ---
