@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "cloudops.fullname" . }}-config
+  labels:
+    {{- include "cloudops.labels" . | nindent 4 }}
+data:
+  PROJECT_NAME: {{ .Values.backend.config.projectName | quote }}
+  POSTGRES_SERVER: {{ .Values.backend.config.postgresServer | quote }}
+  POSTGRES_DB: {{ .Values.backend.config.postgresDb | quote }}
+  REDIS_HOST: {{ .Values.backend.config.redisHost | quote }}
+  LOG_LEVEL: {{ .Values.backend.config.logLevel | quote }}

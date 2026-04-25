@@ -1,0 +1,17 @@
+backend:
+  replicaCount: 5
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+frontend:
+  replicaCount: 3
+autoscaling:
+  enabled: true
+  minReplicas: 3
+  maxReplicas: 20
+ingress:
+  hosts:
+    - host: cloudops.example.com
+podDisruptionBudget:
+  minAvailable: 2

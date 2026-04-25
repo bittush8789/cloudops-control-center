@@ -1,37 +1,94 @@
-# Default values for cloudops-control-center.
+# Global Values
+nameOverride: ""
+fullnameOverride: ""
 
-replicaCount: 1
-
-images:
-  backend:
-    repository: your-docker-hub/cloudops-backend
+# Backend Configuration
+backend:
+  replicaCount: 1
+  image:
+    repository: bittush8789/cloudops-backend
     pullPolicy: IfNotPresent
-    tag: "latest"
-  frontend:
-    repository: your-docker-hub/cloudops-frontend
-    pullPolicy: IfNotPresent
-    tag: "latest"
+    tag: ""
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+  config:
+    projectName: "CloudOps Control Center"
+    postgresServer: "postgres"
+    postgresDb: "cloudops"
+    redisHost: "redis"
+    logLevel: "info"
+  secrets:
+    secretKey: "change-me"
+    postgresUser: "postgres"
+    postgresPassword: "password"
 
+# Frontend Configuration
+frontend:
+  replicaCount: 1
+  image:
+    repository: bittush8789/cloudops-frontend
+    pullPolicy: IfNotPresent
+    tag: ""
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+# Global Service Configuration
 service:
   type: ClusterIP
-  backendPort: 8000
-  frontendPort: 3000
 
+# Ingress Configuration
 ingress:
   enabled: true
   className: "nginx"
   annotations:
     cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
   hosts:
     - host: cloudops.local
-      paths:
-        - path: /
-          pathType: ImplementationSpecific
+  tls: []
 
-resources:
-  limits:
-    cpu: 500m
-    memory: 512Mi
-  requests:
-    cpu: 100m
-    memory: 128Mi
+# Autoscaling (HPA)
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+
+# Security Contexts
+podSecurityContext:
+  runAsUser: 1001
+  runAsGroup: 1001
+  fsGroup: 1001
+
+securityContext:
+  capabilities:
+    drop:
+    - ALL
+  readOnlyRootFilesystem: false
+  runAsNonRoot: true
+  runAsUser: 1001
+
+# Service Account
+serviceAccount:
+  create: true
+  annotations: {}
+
+# Pod Disruption Budget
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1
+
+# Network Policy
+networkPolicy:
+  enabled: true

@@ -1,0 +1,9 @@
+backend:
+  replicaCount: 3
+frontend:
+  replicaCount: 2
+autoscaling:
+  enabled: true
+ingress:
+  hosts:
+    - host: staging.cloudops.example.com

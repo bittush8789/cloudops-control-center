@@ -1,0 +1,33 @@
+{{- if .Values.networkPolicy.enabled -}}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "cloudops.fullname" . }}
+  labels:
+    {{- include "cloudops.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      {{- include "cloudops.selectorLabels" . | nindent 6 }}
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # Allow frontend to talk to backend
+    - from:
+        - podSelector:
+            matchLabels:
+              {{- include "cloudops.selectorLabels" . | nindent 14 }}
+              component: frontend
+      ports:
+        - protocol: TCP
+          port: 8000
+    # Allow external traffic to frontend via ingress controller
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 3000
+{{- end }}

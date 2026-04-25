@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "cloudops.fullname" . }}-backend
+  labels:
+    {{- include "cloudops.labels" . | nindent 4 }}
+    component: backend
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: 8000
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "cloudops.selectorLabels" . | nindent 4 }}
+    component: backend
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "cloudops.fullname" . }}-frontend
+  labels:
+    {{- include "cloudops.labels" . | nindent 4 }}
+    component: frontend
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: 3000
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "cloudops.selectorLabels" . | nindent 4 }}
+    component: frontend
