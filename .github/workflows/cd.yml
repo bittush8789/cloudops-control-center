@@ -1,0 +1,35 @@
+name: CD - Continuous Deployment
+
+on:
+  workflow_run:
+    workflows: ["CI - Continuous Integration"]
+    branches: [main]
+    types:
+      - completed
+
+jobs:
+  deploy-gitops:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      - name: Checkout GitOps Repo
+        uses: actions/checkout@v4
+        with:
+          repository: 'your-org/cloudops-gitops-manifests'
+          token: ${{ secrets.GITOPS_REPO_TOKEN }}
+          path: gitops
+
+      - name: Update Image Tag
+        run: |
+          cd gitops
+          # Use sed to update image tag in k8s manifests
+          sed -i "s/tag: .*/tag: ${{ github.sha }}/g" values.yaml
+          
+      - name: Commit and Push Changes
+        run: |
+          cd gitops
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add .
+          git commit -m "chore: bump image tag to ${{ github.sha }} [skip ci]"
+          git push origin main

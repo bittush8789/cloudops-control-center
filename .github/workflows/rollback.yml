@@ -1,0 +1,43 @@
+name: Rollback - Deployment Rollback
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_env:
+        description: 'Environment to rollback'
+        required: true
+        type: choice
+        options:
+          - dev
+          - qa
+          - staging
+          - prod
+      previous_tag:
+        description: 'Previous Image Tag to restore'
+        required: true
+
+jobs:
+  rollback:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout GitOps Repo
+        uses: actions/checkout@v4
+        with:
+          repository: 'your-org/cloudops-gitops-manifests'
+          token: ${{ secrets.GITOPS_REPO_TOKEN }}
+          path: gitops
+
+      - name: Rollback ${{ github.event.inputs.target_env }}
+        run: |
+          cd gitops
+          # Update the manifest to the previous known good tag
+          sed -i "s/tag: .*/tag: ${{ github.event.inputs.previous_tag }}/g" env/${{ github.event.inputs.target_env }}/values.yaml
+          
+      - name: Commit and Push
+        run: |
+          cd gitops
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add .
+          git commit -m "refactor: rollback ${{ github.event.inputs.target_env }} to ${{ github.event.inputs.previous_tag }} [skip ci]"
+          git push origin main
