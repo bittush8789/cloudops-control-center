@@ -1,9 +1,9 @@
 # 🚀 CloudOps Control Center — Enterprise DevOps Platform
 
-[![CI Pipeline](https://img.shields.io/badge/CI-GitHub%20Actions-blue?logo=github-actions)](https://github.com/bittush8789/cloudops-control-center/actions)
-[![Security Scan](https://img.shields.io/badge/Security-Trivy%20%7C%20SonarQube-green?logo=trivy)](security/README.md)
-[![Infrastructure](https://img.shields.io/badge/Infra-Terraform%20%7C%20AWS-orange?logo=terraform)](terraform/README.md)
-[![GitOps](https://img.shields.io/badge/GitOps-ArgoCD-red?logo=argo)](gitops-repo/README.md)
+[![CI Pipeline](https://img.shields.io/badge/CI-GitHub%20Actions-blue?logo=github-actions)](docs/cicd-pipelines.md)
+[![Security Scan](https://img.shields.io/badge/Security-Trivy%20%7C%20SonarQube-green?logo=trivy)](docs/security-hardening.md)
+[![Infrastructure](https://img.shields.io/badge/Infra-Terraform%20%7C%20AWS-orange?logo=terraform)](docs/infrastructure.md)
+[![GitOps](https://img.shields.io/badge/GitOps-ArgoCD-red?logo=argo)](docs/gitops-orchestration.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 **CloudOps Control Center** is a state-of-the-art, production-grade DevOps and GitOps platform designed for high-scale application management, automated infrastructure provisioning, and deep observability. Built for reliability, security, and developer velocity.
