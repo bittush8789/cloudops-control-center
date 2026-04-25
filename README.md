@@ -726,29 +726,7 @@ copies or substantial portions of the Software.
 
 ---
 
-## 👨‍💻 Author
-
-<table>
-  <tr>
-    <td align="center">
-      <strong>Bittu Sharma</strong><br/>
-      Full Stack Developer & DevOps Engineer<br/><br/>
-      <a href="https://github.com/your-username">
-        <img src="https://img.shields.io/badge/GitHub-100000?style=flat-square&logo=github&logoColor=white" />
-      </a>
-      <a href="https://linkedin.com/in/your-profile">
-        <img src="https://img.shields.io/badge/LinkedIn-0077B5?style=flat-square&logo=linkedin&logoColor=white" />
-      </a>
-    </td>
-  </tr>
-</table>
-
----
 
 <p align="center">
   <strong>⭐ If you found this project useful, please consider giving it a star!</strong>
-</p>
-
-<p align="center">
-  Made with ❤️ by Bittu Sharma
 </p>
