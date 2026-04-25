@@ -1,0 +1,22 @@
+loki:
+  auth_enabled: false
+  commonConfig:
+    replication_factor: 1
+  storage:
+    type: 'filesystem'
+  
+# Promtail configuration to ship logs to Loki
+promtail:
+  enabled: true
+  config:
+    clients:
+      - url: http://loki:3100/loki/api/v1/push
+    snippets:
+      extraScrapeConfigs: |
+        - job_name: cloudops-logs
+          kubernetes_sd_configs:
+            - role: pod
+          relabel_configs:
+            - source_labels: [__meta_kubernetes_namespace]
+              action: keep
+              regex: cloudops-.*
