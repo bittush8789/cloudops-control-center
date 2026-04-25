@@ -39,6 +39,7 @@
 - [Database Schema](#-database-schema)
 - [Frontend Pages](#-frontend-pages)
 - [Docker Compose](#-docker-compose)
+- [Code Quality (SonarQube)](#-code-quality-sonarqube)
 - [Security](#-security)
 - [Screenshots](#-screenshots)
 - [Roadmap](#-roadmap)
@@ -547,6 +548,7 @@ The project ships with a production-ready `docker-compose.yml` that orchestrates
 |--------------|--------------------|----- -|------------------------------------|
 | `frontend`   | Custom (Next.js)   | 3000  | Dashboard UI                       |
 | `backend`    | Custom (FastAPI)   | 8000  | REST API server                    |
+| `sonarqube`  | sonarqube:community| 9000  | Static code analysis *(sonar profile)*|
 | `postgres`   | postgres:16-alpine | 5432  | Primary database                   |
 | `redis`      | redis:7-alpine     | 6379  | Cache & session store              |
 | `pgadmin`    | dpage/pgadmin4     | 5050  | DB admin UI *(dev profile only)*   |
@@ -632,7 +634,50 @@ docker compose restart backend
          └──────────────┘          └──────────────┘
 ```
 
----
+## 🔍 Code Quality (SonarQube)
+
+CloudOps Control Center is pre-configured for automated code quality and security analysis using SonarQube.
+
+### Setup SonarQube Server
+
+1. **Increase Virtual Memory** (Required for Elasticsearch in SonarQube):
+   - **Linux/macOS**: `sudo sysctl -w vm.max_map_count=262144`
+   - **Windows (Docker Desktop)**: Settings → Resources → WSL Integration → (Ensure your distro is enabled)
+
+2. **Start SonarQube**:
+   ```bash
+   docker compose --profile sonar up -d
+   ```
+
+3. **Access Dashboard**: Open `http://localhost:9000`
+   - **Username**: `admin`
+   - **Password**: `admin` (You will be prompted to change it)
+
+### Running Analysis
+
+1. **Create a Token**:
+   - Go to **My Account** → **Security** → **Generate Tokens**.
+   - Copy the token for use in the next step.
+
+2. **Install Sonar Scanner**:
+   - **CLI**: [Download Sonar Scanner](https://docs.sonarqube.org/latest/analysis/scan/sonarscanner/)
+   - **Node.js**: `npm install -g sonarqube-scanner`
+
+3. **Execute Analysis**:
+   Run the following from the project root:
+   ```bash
+   sonar-scanner \
+     -Dsonar.projectKey=cloudops-control-center \
+     -Dsonar.sources=. \
+     -Dsonar.host.url=http://localhost:9000 \
+     -Dsonar.login=YOUR_GENERATED_TOKEN
+   ```
+
+### Quality Gates
+The project includes a `sonar-project.properties` file that automatically configures:
+- Python 3.12 analysis for the backend
+- TypeScript/Next.js analysis for the frontend
+- Exclusions for build artifacts and dependency folders
 
 ## 🗺 Roadmap
 
@@ -645,6 +690,7 @@ docker compose restart backend
 - [x] Configuration and secrets management
 - [x] User management admin panel
 - [x] REST API with OpenAPI documentation
+- [x] Static Code Analysis (SonarQube)
 - [ ] WebSocket real-time log streaming
 - [ ] Prometheus + Grafana metric integration
 - [ ] Database migrations with Alembic
